@@ -297,6 +297,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy-fighting-research"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_a11y"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2851,13 +2858,6 @@ name = "regex-syntax"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "adad44e29e4c806119491a7f06f03de4d1af22c3a680dd47f1e6e179439d1f56"
-
-[[package]]
-name = "relaxing-game"
-version = "0.1.0"
-dependencies = [
- "bevy",
-]
 
 [[package]]
 name = "renderdoc-sys"
