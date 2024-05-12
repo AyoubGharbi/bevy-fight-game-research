@@ -9,21 +9,30 @@ use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Clone)]
+pub struct FrameData {
+    pub hit_boxes: Vec<HitBox>,
+    pub hurt_boxes: Vec<HurtBox>,
+}
+
+#[derive(Deserialize, Clone)]
 pub struct SpriteSheetInfo {
-    pub(crate) id: String,
-    pub(crate) image_path: String,
-    pub(crate) tile_width: usize,
-    pub(crate) tile_height: usize,
-    pub(crate) columns: usize,
-    pub(crate) rows: usize,
+    pub id: String,
+    pub image_path: String,
+    pub sprite_sheet_width: usize,
+    pub sprite_sheet_height: usize,
+    pub tile_width: usize,
+    pub tile_height: usize,
+    pub columns: usize,
+    pub rows: usize,
+    pub frames: Vec<FrameData>,
 }
 
 #[derive(Resource)]
 pub struct SpriteSheetAtlas {
-    pub(crate) handle: Handle<TextureAtlasLayout>,
-    pub(crate) sprite_sheet_path: String,
-    pub(crate) texture_handle: Handle<Image>,
-    pub(crate) sprite_sheet_info: SpriteSheetInfo,
+    pub handle: Handle<TextureAtlasLayout>,
+    pub sprite_sheet_path: String,
+    pub texture_handle: Handle<Image>,
+    pub sprite_sheet_info: SpriteSheetInfo,
 }
 
 #[derive(Resource)]
@@ -32,15 +41,15 @@ pub(crate) struct SpriteSheets {
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-struct HitBox {
-    size: Vec2,
-    offset: Vec2,
+pub struct HitBox {
+    pub size: Vec2,
+    pub offset: Vec2,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-struct HurtBox {
-    size: Vec2,
-    offset: Vec2,
+pub struct HurtBox {
+    pub size: Vec2,
+    pub offset: Vec2,
 }
 
 pub struct EditorSpriteSheetPlugin;
