@@ -9,14 +9,14 @@ use bevy::utils::HashMap;
 use bevy::utils::petgraph::visit::Walker;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
-struct SpriteSheetInfo {
-    id: String,
-    image_path: String,
-    tile_width: usize,
-    tile_height: usize,
-    columns: usize,
-    rows: usize,
+#[derive(Deserialize, Clone)]
+pub struct SpriteSheetInfo {
+    pub(crate) id: String,
+    pub(crate) image_path: String,
+    pub(crate) tile_width: usize,
+    pub(crate) tile_height: usize,
+    pub(crate) columns: usize,
+    pub(crate) rows: usize,
 }
 
 #[derive(Resource)]
@@ -24,6 +24,7 @@ pub struct SpriteSheetAtlas {
     pub(crate) handle: Handle<TextureAtlasLayout>,
     pub(crate) sprite_sheet_path: String,
     pub(crate) texture_handle: Handle<Image>,
+    pub(crate) sprite_sheet_info: SpriteSheetInfo,
 }
 
 #[derive(Resource)]
@@ -72,6 +73,7 @@ fn load_sprite_sheets(
         );
         let texture_atlas_layout_handle = texture_atlases.add(texture_atlas_layout);
         let atlas_data = SpriteSheetAtlas {
+            sprite_sheet_info: info.clone(),
             handle: texture_atlas_layout_handle,
             sprite_sheet_path: info.image_path.clone(),
             texture_handle: tex_handle,

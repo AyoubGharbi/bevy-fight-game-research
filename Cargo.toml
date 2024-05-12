@@ -11,9 +11,6 @@ image = { version = "0.25.1", features = ["jpeg", "png"] } # Add the types you w
 serde = { version = "1.0.200", features = ["derive"] }
 serde_json = "1.0.116"
 
-[toolchain]
-channel = "nightly"
-
 # Enable a small amount of optimization in debug mode
 [profile.dev]
 opt-level = 1
