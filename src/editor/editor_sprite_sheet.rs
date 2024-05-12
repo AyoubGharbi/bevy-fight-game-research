@@ -8,13 +8,13 @@ use bevy::sprite::TextureAtlasLayout;
 use bevy::utils::HashMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FrameData {
     pub hit_boxes: Vec<HitBox>,
     pub hurt_boxes: Vec<HurtBox>,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SpriteSheetInfo {
     pub id: String,
     pub image_path: String,
@@ -25,6 +25,11 @@ pub struct SpriteSheetInfo {
     pub columns: usize,
     pub rows: usize,
     pub frames: Vec<FrameData>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct SpriteSheetsData {
+    pub sheets: Vec<SpriteSheetInfo>,
 }
 
 #[derive(Resource)]
@@ -40,13 +45,13 @@ pub(crate) struct SpriteSheets {
     pub(crate) sheets: HashMap<String, SpriteSheetAtlas>,
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Default, Component, Serialize, Deserialize, Clone, Debug)]
 pub struct HitBox {
     pub size: Vec2,
     pub offset: Vec2,
 }
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Default, Component, Serialize, Deserialize, Clone, Debug)]
 pub struct HurtBox {
     pub size: Vec2,
     pub offset: Vec2,
@@ -68,9 +73,9 @@ fn load_sprite_sheets(
     mut sprite_sheets: ResMut<SpriteSheets>,
 ) {
     let json_path = "assets/sprite_sheets.json";
-    let sprite_sheet_infos: Vec<SpriteSheetInfo> = load_settings_from_file(json_path);
+    let sprite_sheet_data: SpriteSheetsData = load_settings_from_file(json_path);
 
-    for info in sprite_sheet_infos {
+    for info in sprite_sheet_data.sheets {
         let tex_handle = asset_server.load(&info.image_path);
         let texture_atlas_layout = TextureAtlasLayout::from_grid(
             Vec2::new(info.tile_width as f32, info.tile_height as f32),
@@ -102,4 +107,11 @@ fn debug_sprite_sheets_loaded(
 fn load_settings_from_file<T: for<'de> Deserialize<'de>>(path: &str) -> T {
     let data = fs::read_to_string(path).expect("Unable to read file");
     serde_json::from_str(&data).expect("Unable to parse JSON")
+}
+
+pub fn save_settings_to_file<T: Serialize>(path: &str, data: &T) {
+    let serialized_data = serde_json::to_string_pretty(data)
+        .expect("Unable to serialize data");
+    fs::write(path, serialized_data)
+        .expect("Unable to write to file");
 }
