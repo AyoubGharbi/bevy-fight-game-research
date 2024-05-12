@@ -22,7 +22,7 @@ struct SpriteSheetInfo {
 #[derive(Resource)]
 pub struct SpriteSheetAtlas {
     pub(crate) handle: Handle<TextureAtlasLayout>,
-    pub(crate) image_path: String,
+    pub(crate) sprite_sheet_path: String,
     pub(crate) texture_handle: Handle<Image>,
 }
 
@@ -48,13 +48,12 @@ pub struct EditorSpriteSheetPlugin;
 impl Plugin for EditorSpriteSheetPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SpriteSheets { sheets: HashMap::new() })
-            .add_systems(Startup, load_sprite_sheets)
-            .add_systems(Update, debug_sprite_sheets_loaded);
+            .add_systems(Startup, load_sprite_sheets);
+        // .add_systems(Update, debug_sprite_sheets_loaded);
     }
 }
 
 fn load_sprite_sheets(
-    mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
     mut sprite_sheets: ResMut<SpriteSheets>,
@@ -74,7 +73,7 @@ fn load_sprite_sheets(
         let texture_atlas_layout_handle = texture_atlases.add(texture_atlas_layout);
         let atlas_data = SpriteSheetAtlas {
             handle: texture_atlas_layout_handle,
-            image_path: info.image_path.clone(),
+            sprite_sheet_path: info.image_path.clone(),
             texture_handle: tex_handle,
         };
         sprite_sheets.sheets.insert(info.id.clone(), atlas_data);
@@ -86,7 +85,7 @@ fn debug_sprite_sheets_loaded(
     sprite_sheets: Res<SpriteSheets>
 ) {
     for (id, handle) in sprite_sheets.sheets.iter() {
-        println!("Sprite Sheet ID: {}, Handle: {:?}", id, handle.image_path);
+        println!("Sprite Sheet ID: {}, Handle: {:?}", id, handle.sprite_sheet_path);
     }
 }
 

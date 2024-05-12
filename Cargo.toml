@@ -9,6 +9,8 @@ bevy_egui = "0.27"
 serde = { version = "1.0.200", features = ["derive"] }
 serde_json = "1.0.116"
 
+[toolchain]
+channel = "nightly"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
