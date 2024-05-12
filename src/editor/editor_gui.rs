@@ -5,6 +5,11 @@ use bevy_egui::egui::emath;
 
 use crate::editor::editor_sprite_sheet::SpriteSheets;
 
+#[derive(Default, Resource)]
+pub struct EditorSpace {
+    pub right: f32,
+}
+
 #[derive(Resource)]
 pub struct SelectedSpriteSheet {
     pub id: Option<String>,
@@ -25,6 +30,7 @@ pub struct EditorGuiPlugin;
 impl Plugin for EditorGuiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EguiPlugin)
+            .insert_resource(EditorSpace::default())
             .insert_resource(SelectedSpriteSheet::default())
             .add_systems(Update, load_sprite_sheets);
     }
@@ -33,11 +39,12 @@ impl Plugin for EditorGuiPlugin {
 fn load_sprite_sheets(
     mut egui_contexts: EguiContexts,
     sprite_sheets: Res<SpriteSheets>,
-    mut selected_sprite_sheet: ResMut<SelectedSpriteSheet>, ) {
+    mut editor_space: ResMut<EditorSpace>,
+    mut selected_sprite_sheet: ResMut<SelectedSpriteSheet>) {
     let ctx = egui_contexts.ctx_mut();
     egui_extras::install_image_loaders(&ctx);
-    egui::SidePanel::left("side_panel")
-        .resizable(true).show(ctx, |ui| {
+    editor_space.right = egui::SidePanel::right("editor")
+        .show(ctx, |ui| {
         ui.collapsing("Loaded Sprite Sheets", |ui| {
             for (id, _sprite_sheet_atlas) in sprite_sheets.sheets.iter() {
                 let button = egui::Button::new(id)
@@ -107,5 +114,7 @@ fn load_sprite_sheets(
                 }
             }
         });
-    });
+    }).response
+        .rect
+        .width();
 }
