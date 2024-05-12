@@ -11,7 +11,6 @@ struct CurrentSpriteSheetEntity {
     pub entity: Option<Entity>,
 }
 
-
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
@@ -29,30 +28,30 @@ fn spawn_camera(mut commands: Commands) {
 
 fn display_selected_sprite_sheet(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
     sprite_sheets: Res<SpriteSheets>,
     selected_sprite_sheet: Res<SelectedSpriteSheet>,
     mut current_sprite_sheet_entity: ResMut<CurrentSpriteSheetEntity>,
 ) {
-
     if let Some(entity) = current_sprite_sheet_entity.entity {
         commands.entity(entity).despawn();
     }
 
     if let Some(id) = &selected_sprite_sheet.id {
-        if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get(id) {
-            let texture_handle = sprite_sheet_atlas.texture_handle.clone();
-            let entity = commands.spawn(SpriteSheetBundle {
-                texture: texture_handle,
-                atlas: TextureAtlas {
-                    layout: sprite_sheet_atlas.handle.clone(),
-                    index: 0,
-                },
-                transform: Transform::from_scale(Vec3::splat(6.0)),
-                ..default()
-            }).id();
+        if let Some(frame_index) = &selected_sprite_sheet.frame_index {
+            if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get(id) {
+                let texture_handle = sprite_sheet_atlas.texture_handle.clone();
+                let entity = commands.spawn(SpriteSheetBundle {
+                    texture: texture_handle,
+                    atlas: TextureAtlas {
+                        layout: sprite_sheet_atlas.handle.clone(),
+                        index: *frame_index,
+                    },
+                    transform: Transform::from_scale(Vec3::splat(6.0)),
+                    ..default()
+                }).id();
 
-            current_sprite_sheet_entity.entity = Some(entity);
+                current_sprite_sheet_entity.entity = Some(entity);
+            }
         }
     }
 }

@@ -3,10 +3,9 @@ use std::fs;
 use bevy::app::App;
 use bevy::asset::{Assets, AssetServer, Handle};
 use bevy::math::Vec2;
-use bevy::prelude::{Commands, Component, Image, Plugin, Res, ResMut, Resource, Startup, Update};
+use bevy::prelude::{Component, Image, Plugin, Res, ResMut, Resource, Startup};
 use bevy::sprite::TextureAtlasLayout;
 use bevy::utils::HashMap;
-use bevy::utils::petgraph::visit::Walker;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Clone)]
