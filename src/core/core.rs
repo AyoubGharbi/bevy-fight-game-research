@@ -1,6 +1,8 @@
 use std::fmt;
+
 use bevy::app::App;
 use bevy::prelude::{ButtonInput, Commands, KeyCode, Plugin, Res, ResMut, Resource, Startup, Update};
+
 use crate::core::core_gui::CoreGuiPlugin;
 
 #[derive(Resource)]
@@ -37,7 +39,8 @@ impl Plugin for CorePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(CoreGuiPlugin)
             .add_systems(Startup, initialization_system)
-            .add_systems(Update, mode_switching_system);
+            .add_systems(Update, mode_switching_system)
+            .add_systems(Update, mode_switching_lifecycle_system);
     }
 }
 
@@ -55,7 +58,8 @@ fn mode_switching_system(mut game_state: ResMut<GameState>, keyboard: Res<Button
 
 fn mode_switching_lifecycle_system(mut commands: Commands, game_state: Res<GameState>) {
     match &game_state.mode {
-        GameMode::Editor => {}
+        GameMode::Editor => {
+        }
         GameMode::Game => {}
     }
 }

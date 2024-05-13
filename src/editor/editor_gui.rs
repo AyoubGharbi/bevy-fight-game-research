@@ -1,7 +1,9 @@
 use bevy::app::{App, Plugin};
-use bevy::prelude::{Res, ResMut, Resource, Update};
+use bevy::prelude::{Entity, Res, ResMut, Resource, Update};
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_egui::egui::emath;
+use crate::core::core::{GameMode, GameState};
+use crate::CurrentSpriteSheetEntity;
 
 use crate::editor::editor_sprite_sheet::{save_settings_to_file, SpriteSheetInfo, SpriteSheets, SpriteSheetsData};
 
@@ -40,7 +42,13 @@ fn load_sprite_sheets(
     mut egui_contexts: EguiContexts,
     mut sprite_sheets: ResMut<SpriteSheets>,
     mut editor_space: ResMut<EditorSpace>,
-    mut selected_sprite_sheet: ResMut<SelectedSpriteSheet>) {
+    mut selected_sprite_sheet: ResMut<SelectedSpriteSheet>,
+    game_state: Res<GameState>) {
+
+    if game_state.mode != GameMode::Editor {
+        return;
+    }
+
     let ctx = egui_contexts.ctx_mut();
     egui_extras::install_image_loaders(&ctx);
     editor_space.right = egui::SidePanel::right("editor")
