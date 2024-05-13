@@ -1,9 +1,11 @@
 mod editor;
+mod core;
 
 use bevy::app::{App};
 use bevy::DefaultPlugins;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use crate::core::core::CorePlugin;
 use crate::editor::editor_gui::{EditorGuiPlugin, EditorSpace, SelectedSpriteSheet};
 use crate::editor::editor_sprite_sheet::{EditorSpriteSheetPlugin, HitBox, HurtBox, SpriteSheets};
 
@@ -18,6 +20,7 @@ struct OriginalCameraTransform(Transform);
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
+        .add_plugins(CorePlugin)
         .add_plugins(EditorSpriteSheetPlugin)
         .add_plugins(EditorGuiPlugin)
         .insert_resource(CurrentSpriteSheetEntity::default())
