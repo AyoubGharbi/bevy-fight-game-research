@@ -3,13 +3,12 @@ use std::fs;
 use bevy::app::{App, Update};
 use bevy::asset::{Assets, AssetServer, Handle};
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Camera, Camera2dBundle, Color, Commands, Component, default, Gizmos, Image, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, Startup, TextureAtlas, Transform, Window, With};
+use bevy::prelude::{Camera, Camera2dBundle, Color, Commands, Component, default, Deref, DerefMut, Entity, Gizmos, Image, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, Startup, TextureAtlas, Transform, Window, With};
 use bevy::sprite::TextureAtlasLayout;
 use bevy::utils::HashMap;
 use bevy::window::PrimaryWindow;
 use serde::{Deserialize, Serialize};
 
-use crate::{CurrentSpriteSheetEntity, OriginalCameraTransform};
 use crate::core::core::{GameMode, GameState};
 use crate::editor::editor_gui::{EditorSpace, SelectedSpriteSheet};
 
@@ -31,6 +30,15 @@ pub struct SpriteSheetInfo {
     pub rows: usize,
     pub frames: Vec<FrameData>,
 }
+
+
+#[derive(Default, Resource)]
+struct CurrentSpriteSheetEntity {
+    pub entity: Option<Entity>,
+}
+
+#[derive(Resource, Deref, DerefMut)]
+struct OriginalCameraTransform(Transform);
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SpriteSheetsData {
