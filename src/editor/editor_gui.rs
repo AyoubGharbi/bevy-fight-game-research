@@ -1,10 +1,9 @@
 use bevy::app::{App, Plugin};
-use bevy::prelude::{Entity, Res, ResMut, Resource, Update};
+use bevy::prelude::{Res, ResMut, Resource, Update};
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_egui::egui::emath;
-use crate::core::core::{GameMode, GameState};
-use crate::CurrentSpriteSheetEntity;
 
+use crate::core::core::{GameMode, GameState};
 use crate::editor::editor_sprite_sheet::{save_settings_to_file, SpriteSheetInfo, SpriteSheets, SpriteSheetsData};
 
 #[derive(Default, Resource)]
