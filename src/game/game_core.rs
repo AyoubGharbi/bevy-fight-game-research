@@ -1,17 +1,22 @@
 use bevy::app::{App, Update};
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Assets, AssetServer, Camera, Camera2dBundle, Commands, Component, default, Deref, DerefMut, Entity, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, Startup, TextureAtlas, TextureAtlasLayout, Time, Timer, TimerMode, Transform};
+use bevy::prelude::{Camera2dBundle, Color, Commands, Component, default, Deref, DerefMut, Entity, Gizmos, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, TextureAtlas, Time, Timer, TimerMode, Transform};
 
 use crate::core::core::{GameMode, GameState};
+use crate::editor::editor_core::{HitBox, HurtBox, SpriteSheets};
+use crate::editor::editor_gui::EditorSelectedSpriteSheet;
+use crate::game::game_gui::GameGuiPlugin;
 
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(GameCameraEntity::default())
+        app.add_plugins(GameGuiPlugin)
+            .insert_resource(GameCameraEntity::default())
             .insert_resource(Player::default())
             .add_systems(Update, animate_sprite)
-            .add_systems(Update, game_state_adapter_system);
+            .add_systems(Update, game_state_adapter_system)
+            .add_systems(Update, gizmos_selected_sprite);
     }
 }
 
@@ -46,11 +51,26 @@ struct AnimationIndices {
 #[derive(Component, Deref, DerefMut)]
 struct AnimationTimer(Timer);
 
+#[derive(Resource)]
+pub struct GameSelectedSpriteSheet {
+    pub id: Option<String>,
+    pub frame_index: Option<usize>,
+}
+
+impl Default for GameSelectedSpriteSheet {
+    fn default() -> Self {
+        GameSelectedSpriteSheet {
+            id: None,
+            frame_index: Some(0),
+        }
+    }
+}
+
 fn game_state_adapter_system(
     mut commands: Commands,
     game_state: Res<GameState>,
-    asset_server: Res<AssetServer>,
-    texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    sprite_sheets: ResMut<SpriteSheets>,
+    selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     mut player: ResMut<Player>) {
     match &game_state.mode {
@@ -66,7 +86,7 @@ fn game_state_adapter_system(
 
         GameMode::Game => {
             if game_camera_entity.entity.is_none() {
-                setup(commands, asset_server, texture_atlas_layouts, game_camera_entity, player);
+                setup(commands, sprite_sheets, selected_sprite_sheet, game_camera_entity, player);
             }
         }
     }
@@ -96,34 +116,45 @@ fn animate_sprite(
 
 fn setup(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+    mut sprite_sheets: ResMut<SpriteSheets>,
+    selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     mut player: ResMut<Player>,
 ) {
+
+    // camera
     let mut entity = commands.spawn(Camera2dBundle::default());
     entity.insert(GameCamera::new(1.0, Vec2::ZERO));
     game_camera_entity.entity = Some(entity.id());
 
+    if let Some(id) = &selected_sprite_sheet.id {
+        if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get_mut(id) {
+            let animation_indices = AnimationIndices { first: 1, last: sprite_sheet_atlas.sprite_sheet_info.columns - 1 };
+            let texture_handle = sprite_sheet_atlas.texture_handle.clone();
+            let mut entity = commands.spawn(
+                (SpriteSheetBundle {
+                    texture: texture_handle,
+                    atlas: TextureAtlas {
+                        layout: sprite_sheet_atlas.handle.clone(),
+                        index: animation_indices.first,
+                    },
+                    transform: Transform::from_scale(Vec3::splat(6.0)),
+                    ..default()
+                },
+                 animation_indices,
+                 AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating))
+                ));
 
-    let texture = asset_server.load("player-punch-cross/player-punch cross-64x64.png");
-    let layout = TextureAtlasLayout::from_grid(Vec2::new(64.0, 64.0), 7, 1, None, None);
-    let texture_atlas_layout = texture_atlas_layouts.add(layout);
-    // Use only the subset of sprites in the sheet that make up the run animation
-    let animation_indices = AnimationIndices { first: 1, last: 6 };
-    let entity = commands.spawn((
-        SpriteSheetBundle {
-            texture,
-            atlas: TextureAtlas {
-                layout: texture_atlas_layout,
-                index: animation_indices.first,
-            },
-            transform: Transform::from_scale(Vec3::splat(6.0)),
-            ..default()
-        },
-        animation_indices,
-        AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating)),
-    ));
 
-    player.entity = Some(entity.id());
+            player.entity = Some(entity.id());
+        }
+    }
+}
+
+fn gizmos_selected_sprite(
+    mut gizmos: Gizmos,
+    query: Query<(&Transform, &HitBox, &HurtBox)>,
+    game_state: Res<GameState>,
+) {
+    !todo!(Diplay frame's hit boxes and hurt boxes);
 }

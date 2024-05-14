@@ -10,7 +10,7 @@ use bevy::window::PrimaryWindow;
 use serde::{Deserialize, Serialize};
 
 use crate::core::core::{GameMode, GameState};
-use crate::editor::editor_gui::{EditorSpace, SelectedSpriteSheet};
+use crate::editor::editor_gui::{EditorSpace, EditorSelectedSpriteSheet, EditorGuiPlugin};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FrameData {
@@ -87,11 +87,12 @@ pub struct HurtBox {
     pub offset: Vec2,
 }
 
-pub struct EditorSpriteSheetPlugin;
+pub struct EditorPlugin;
 
-impl Plugin for EditorSpriteSheetPlugin {
+impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SpriteSheets { sheets: HashMap::new() })
+        app.add_plugins(EditorGuiPlugin)
+            .insert_resource(SpriteSheets { sheets: HashMap::new() })
             .insert_resource(EditorSpriteSheetEntity::default())
             .insert_resource(EditorCameraEntity::default())
             .add_systems(Startup, load_sprite_sheets)
@@ -169,7 +170,7 @@ fn game_state_adapter_system(
 fn display_selected_sprite_sheet(
     mut commands: Commands,
     mut sprite_sheets: ResMut<SpriteSheets>,
-    selected_sprite_sheet: Res<SelectedSpriteSheet>,
+    selected_sprite_sheet: Res<EditorSelectedSpriteSheet>,
     mut current_sprite_sheet_entity: ResMut<EditorSpriteSheetEntity>,
     game_state: Res<GameState>,
 ) {

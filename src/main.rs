@@ -3,8 +3,7 @@ use bevy::DefaultPlugins;
 use bevy::prelude::*;
 
 use crate::core::core::CorePlugin;
-use crate::editor::editor_core::EditorSpriteSheetPlugin;
-use crate::editor::editor_gui::EditorGuiPlugin;
+use crate::editor::editor_core::EditorPlugin;
 use crate::game::game_core::GamePlugin;
 
 mod editor;
@@ -15,8 +14,7 @@ fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(ImagePlugin::default_nearest()))
         .add_plugins(CorePlugin)
-        .add_plugins(EditorSpriteSheetPlugin)
-        .add_plugins(EditorGuiPlugin)
+        .add_plugins(EditorPlugin)
         .add_plugins(GamePlugin)
         .run();
 }

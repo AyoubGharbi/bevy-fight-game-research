@@ -12,14 +12,14 @@ pub struct EditorSpace {
 }
 
 #[derive(Resource)]
-pub struct SelectedSpriteSheet {
+pub struct EditorSelectedSpriteSheet {
     pub id: Option<String>,
     pub frame_index: Option<usize>,
 }
 
-impl Default for SelectedSpriteSheet {
+impl Default for EditorSelectedSpriteSheet {
     fn default() -> Self {
-        SelectedSpriteSheet {
+        EditorSelectedSpriteSheet {
             id: None,
             frame_index: Some(0),
         }
@@ -32,7 +32,7 @@ impl Plugin for EditorGuiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EguiPlugin)
             .insert_resource(EditorSpace::default())
-            .insert_resource(SelectedSpriteSheet::default())
+            .insert_resource(EditorSelectedSpriteSheet::default())
             .add_systems(Update, load_sprite_sheets);
     }
 }
@@ -41,7 +41,7 @@ fn load_sprite_sheets(
     mut egui_contexts: EguiContexts,
     mut sprite_sheets: ResMut<SpriteSheets>,
     mut editor_space: ResMut<EditorSpace>,
-    mut selected_sprite_sheet: ResMut<SelectedSpriteSheet>,
+    mut selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     game_state: Res<GameState>) {
 
     if game_state.mode != GameMode::Editor {
