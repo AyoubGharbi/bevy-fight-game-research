@@ -4,7 +4,7 @@ use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_egui::egui::emath;
 
 use crate::core::core::{GameMode, GameState};
-use crate::editor::editor_sprite_sheet::{save_settings_to_file, SpriteSheetInfo, SpriteSheets, SpriteSheetsData};
+use crate::editor::editor_core::{save_settings_to_file, SpriteSheetInfo, SpriteSheets, SpriteSheetsData};
 
 #[derive(Default, Resource)]
 pub struct EditorSpace {

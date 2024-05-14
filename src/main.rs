@@ -3,9 +3,9 @@ use bevy::DefaultPlugins;
 use bevy::prelude::*;
 
 use crate::core::core::CorePlugin;
-use crate::game::game_core::GamePlugin;
+use crate::editor::editor_core::EditorSpriteSheetPlugin;
 use crate::editor::editor_gui::EditorGuiPlugin;
-use crate::editor::editor_sprite_sheet::EditorSpriteSheetPlugin;
+use crate::game::game_core::GamePlugin;
 
 mod editor;
 mod core;

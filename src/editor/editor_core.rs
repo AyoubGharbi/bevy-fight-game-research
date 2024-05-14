@@ -3,7 +3,7 @@ use std::fs;
 use bevy::app::{App, Update};
 use bevy::asset::{Assets, AssetServer, Handle};
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Camera, Camera2dBundle, Color, Commands, Component, default, Deref, DerefMut, Entity, Gizmos, Image, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, Startup, TextureAtlas, Transform, Window, With};
+use bevy::prelude::{Camera2dBundle, Color, Commands, Component, default, Deref, DerefMut, Entity, Gizmos, Image, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, Startup, TextureAtlas, Transform, Window, With};
 use bevy::sprite::TextureAtlasLayout;
 use bevy::utils::HashMap;
 use bevy::window::PrimaryWindow;
@@ -33,12 +33,29 @@ pub struct SpriteSheetInfo {
 
 
 #[derive(Default, Resource)]
-struct CurrentSpriteSheetEntity {
+struct EditorSpriteSheetEntity {
+    pub entity: Option<Entity>,
+}
+
+#[derive(Default, Resource)]
+pub(crate) struct EditorCameraEntity {
     pub entity: Option<Entity>,
 }
 
 #[derive(Resource, Deref, DerefMut)]
-struct OriginalCameraTransform(Transform);
+struct EditorCameraTransform(Transform);
+
+#[derive(Component)]
+struct EditorCamera {
+    zoom: f32,
+    target: Vec2,
+}
+
+impl EditorCamera {
+    fn new(zoom: f32, target: Vec2) -> Self {
+        Self { zoom, target }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SpriteSheetsData {
@@ -75,9 +92,11 @@ pub struct EditorSpriteSheetPlugin;
 impl Plugin for EditorSpriteSheetPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SpriteSheets { sheets: HashMap::new() })
-            .insert_resource(CurrentSpriteSheetEntity::default())
+            .insert_resource(EditorSpriteSheetEntity::default())
+            .insert_resource(EditorCameraEntity::default())
             .add_systems(Startup, load_sprite_sheets)
-            .add_systems(Startup, spawn_camera)
+            .add_systems(Startup, spawn_editor_camera)
+            .add_systems(Update, game_state_adapter_system)
             .add_systems(Update, display_selected_sprite_sheet)
             .add_systems(Update, update_camera_transform)
             .add_systems(Update, gizmos_selected_sprite);
@@ -112,18 +131,46 @@ fn load_sprite_sheets(
     }
 }
 
-fn spawn_camera(mut commands: Commands) {
+fn spawn_editor_camera(
+    mut commands: Commands,
+    mut editor_camera_entity: ResMut<EditorCameraEntity>,
+) {
     let camera_transform = Transform::from_xyz(0.0, 0.0, 100.0);
-    commands.insert_resource(OriginalCameraTransform(camera_transform.clone()));
+    commands.insert_resource(EditorCameraTransform(camera_transform.clone()));
 
-    commands.spawn(Camera2dBundle::default());
+    let mut entity = commands.spawn(Camera2dBundle::default());
+    entity.insert(EditorCamera::new(1.0, Vec2::ZERO));
+    editor_camera_entity.entity = Some(entity.id());
+}
+
+fn game_state_adapter_system(
+    mut commands: Commands,
+    game_state: Res<GameState>,
+    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheetEntity>,
+    mut editor_camera_entity: ResMut<EditorCameraEntity>) {
+    match &game_state.mode {
+        GameMode::Editor => {
+            if editor_camera_entity.entity.is_none() {
+                spawn_editor_camera(commands, editor_camera_entity);
+            }
+        }
+
+        GameMode::Game => {
+            if let Some(entity) = current_sprite_sheet_entity.entity.take() {
+                commands.entity(entity).despawn();
+            }
+            if let Some(entity) = editor_camera_entity.entity.take() {
+                commands.entity(entity).despawn();
+            }
+        }
+    }
 }
 
 fn display_selected_sprite_sheet(
     mut commands: Commands,
     mut sprite_sheets: ResMut<SpriteSheets>,
     selected_sprite_sheet: Res<SelectedSpriteSheet>,
-    mut current_sprite_sheet_entity: ResMut<CurrentSpriteSheetEntity>,
+    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheetEntity>,
     game_state: Res<GameState>,
 ) {
     if game_state.mode != GameMode::Editor {
@@ -173,31 +220,37 @@ fn display_selected_sprite_sheet(
 
 fn update_camera_transform(
     editor_space: Res<EditorSpace>,
-    original_camera_transform: Res<OriginalCameraTransform>,
+    original_camera_transform: Res<EditorCameraTransform>,
     windows: Query<&Window, With<PrimaryWindow>>,
-    mut camera_query: Query<&mut Transform, With<Camera>>,
+    editor_camera_entity: Res<EditorCameraEntity>,
+    mut transforms: Query<&mut Transform>,
     game_state: Res<GameState>,
 ) {
-    let is_editor = game_state.mode == GameMode::Editor;
+    if game_state.mode != GameMode::Editor {
+        return;
+    }
 
-    let mut transform = camera_query.single_mut();
+    if let Some(camera_entity) = editor_camera_entity.entity {
+        if let Ok(mut transform) = transforms.get_mut(camera_entity) {
+            let window = windows.single();
+            let right_taken = editor_space.right / window.width();
 
-    let window = windows.single();
-    let right_taken = editor_space.right / window.width();
+            let translation_x = if game_state.mode == GameMode::Editor {
+                (right_taken) * window.width() * 0.5
+            } else {
+                0.0
+            };
 
-    let translation_x = if is_editor {
-        (right_taken) * window.width() * 0.5
-    } else {
-        0.0
-    };
-
-    transform.translation = original_camera_transform.translation
-        + Vec3::new(
-        translation_x,
-        0.0,
-        0.0,
-    );
+            transform.translation = original_camera_transform.translation
+                + Vec3::new(
+                translation_x,
+                0.0,
+                0.0,
+            );
+        }
+    }
 }
+
 
 fn gizmos_selected_sprite(
     mut gizmos: Gizmos,
