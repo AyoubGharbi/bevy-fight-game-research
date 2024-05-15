@@ -100,7 +100,8 @@ impl Plugin for EditorPlugin {
             .add_systems(Update, game_state_adapter_system)
             .add_systems(Update, display_selected_sprite_sheet)
             .add_systems(Update, update_camera_transform)
-            .add_systems(Update, gizmos_selected_sprite);
+            .add_systems(Update, gizmos_hit_boxes_sprite)
+            .add_systems(Update, gizmos_hurt_boxes_sprite);
     }
 }
 
@@ -253,35 +254,48 @@ fn update_camera_transform(
 }
 
 
-fn gizmos_selected_sprite(
+fn gizmos_hurt_boxes_sprite(
     mut gizmos: Gizmos,
-    query: Query<(&Transform, &HitBox, &HurtBox)>,
+    query: Query<(&Transform, &HurtBox)>,
     game_state: Res<GameState>,
 ) {
     if game_state.mode != GameMode::Editor {
         return;
     }
-    for (transform, hit_box, hurt_box) in query.iter() {
+    for (transform,hurt_box) in query.iter() {
         let scale = transform.scale.truncate();
-
-        let hit_box_size_scaled = hit_box.size * scale;
-        let hit_box_offset_scaled = hit_box.offset * scale;
 
         let hurt_box_size_scaled = hurt_box.size * scale;
         let hurt_box_offset_scaled = hurt_box.offset * scale;
-
-        gizmos.rect_2d(
-            transform.translation.truncate() + hit_box_offset_scaled,
-            0.0,
-            hit_box_size_scaled,
-            Color::RED,
-        );
 
         gizmos.rect_2d(
             transform.translation.truncate() + hurt_box_offset_scaled,
             0.0,
             hurt_box_size_scaled,
             Color::GREEN,
+        );
+    }
+}
+
+fn gizmos_hit_boxes_sprite(
+    mut gizmos: Gizmos,
+    query: Query<(&Transform, &HitBox)>,
+    game_state: Res<GameState>,
+) {
+    if game_state.mode != GameMode::Editor {
+        return;
+    }
+    for (transform, hit_box) in query.iter() {
+        let scale = transform.scale.truncate();
+
+        let hit_box_size_scaled = hit_box.size * scale;
+        let hit_box_offset_scaled = hit_box.offset * scale;
+
+        gizmos.rect_2d(
+            transform.translation.truncate() + hit_box_offset_scaled,
+            0.0,
+            hit_box_size_scaled,
+            Color::RED,
         );
     }
 }
