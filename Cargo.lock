@@ -383,6 +383,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
+ "bevy_math",
  "egui_extras",
  "image 0.25.1",
  "serde",

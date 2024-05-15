@@ -1,8 +1,11 @@
 use bevy::app::{App, Update};
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Camera2dBundle, Color, Commands, Component, default, DefaultGizmoConfigGroup, Deref, DerefMut, Entity, GizmoConfigStore, Gizmos, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, TextureAtlas, Time, Timer, TimerMode, Transform};
+use bevy::prelude::{Assets, Camera, Camera2dBundle, ClearColorConfig, Color, ColorMaterial, Commands, Component, default, DefaultGizmoConfigGroup, Deref, DerefMut, Entity, GizmoConfigStore, Gizmos, Handle, Mesh, Plugin, Query, Res, ResMut, Resource, shape, SpriteSheetBundle, TextureAtlas, Time, Timer, TimerMode, Transform};
+use bevy::sprite::MaterialMesh2dBundle;
+use bevy_math::primitives::Rectangle;
 
 use crate::core::core::{GameMode, GameState};
+use crate::core::core_gui::GuiState;
 use crate::editor::editor_core::SpriteSheets;
 use crate::editor::editor_gui::EditorSelectedSpriteSheet;
 use crate::game::game_gui::GameGuiPlugin;
@@ -13,10 +16,13 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(GameGuiPlugin)
             .insert_resource(GameCameraEntity::default())
+            .insert_resource(HitboxMeshAndMaterial::default())
+            .insert_resource(HurtboxMeshAndMaterial::default())
             .insert_resource(Player::default())
             .add_systems(Update, animate_sprite)
             .add_systems(Update, game_state_adapter_system)
-            .add_systems(Update, gizmos_selected_sprite);
+            .add_systems(Update, gizmos_selected_sprite)
+            .add_systems(Update, update_lifetimes);
     }
 }
 
@@ -30,6 +36,23 @@ impl GameCamera {
     fn new(zoom: f32, target: Vec2) -> Self {
         Self { zoom, target }
     }
+}
+
+#[derive(Default, Resource)]
+struct HitboxMeshAndMaterial {
+    mesh: Handle<Mesh>,
+    material: Handle<ColorMaterial>,
+}
+
+#[derive(Default, Resource)]
+struct HurtboxMeshAndMaterial {
+    mesh: Handle<Mesh>,
+    material: Handle<ColorMaterial>,
+}
+
+#[derive(Component)]
+struct Lifetime {
+    timer: Timer,
 }
 
 #[derive(Default, Resource)]
@@ -73,6 +96,10 @@ fn game_state_adapter_system(
     sprite_sheets: ResMut<SpriteSheets>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
+    hitbox_mesh_and_material: ResMut<HitboxMeshAndMaterial>,
+    hurtbox_mesh_and_material: ResMut<HurtboxMeshAndMaterial>,
     mut player: ResMut<Player>) {
     match &game_state.mode {
         GameMode::Editor => {
@@ -87,7 +114,14 @@ fn game_state_adapter_system(
 
         GameMode::Game => {
             if game_camera_entity.entity.is_none() {
-                setup(commands, config_store, sprite_sheets, selected_sprite_sheet, game_camera_entity, player);
+                setup(
+                    commands,
+                    config_store,
+                    sprite_sheets,
+                    selected_sprite_sheet,
+                    game_camera_entity,
+                    meshes, materials, hitbox_mesh_and_material, hurtbox_mesh_and_material,
+                    player);
             }
         }
     }
@@ -121,16 +155,31 @@ fn setup(
     mut sprite_sheets: ResMut<SpriteSheets>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    mut hitbox_mesh_and_material: ResMut<HitboxMeshAndMaterial>,
+    mut hurtbox_mesh_and_material: ResMut<HurtboxMeshAndMaterial>,
     mut player: ResMut<Player>,
 ) {
-
-    // gizmos
-
     let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 5.;
 
+    // hitbox gizmo
+    hitbox_mesh_and_material.mesh = meshes.add(Mesh::from(Rectangle::default()));
+    hitbox_mesh_and_material.material = materials.add(ColorMaterial::from(Color::rgb_u8(243, 139, 168)));
+
+    // hurtbox gizmo
+    hurtbox_mesh_and_material.mesh = meshes.add(Mesh::from(Rectangle::default()));
+    hurtbox_mesh_and_material.material = materials.add(ColorMaterial::from(Color::rgb_u8(166, 227, 161)));
+
     // camera
-    let mut entity = commands.spawn(Camera2dBundle::default());
+    let mut entity = commands.spawn(Camera2dBundle {
+        camera: Camera {
+            clear_color: ClearColorConfig::Custom(Color::rgb_u8(17, 17, 27)), // Set background color if needed
+            ..default()
+        },
+        ..default()
+    });
     entity.insert(GameCamera::new(1.0, Vec2::ZERO));
     game_camera_entity.entity = Some(entity.id());
 
@@ -159,11 +208,15 @@ fn setup(
 }
 
 fn gizmos_selected_sprite(
+    mut commands: Commands,
     mut gizmos: Gizmos,
+    hitbox_mesh_and_material: Res<HitboxMeshAndMaterial>,
+    hurtbox_mesh_and_material: Res<HurtboxMeshAndMaterial>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut sprite_sheets: ResMut<SpriteSheets>,
     mut query: Query<(&Transform, &AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
     game_state: Res<GameState>,
+    gui_state: ResMut<GuiState>,
 ) {
     if game_state.mode != GameMode::Game {
         return;
@@ -176,29 +229,71 @@ fn gizmos_selected_sprite(
 
 
                 if let Some(frame_data) = sprite_sheet_atlas.sprite_sheet_info.frames.get_mut(atlas.index) {
-                    for hit_box in &frame_data.hit_boxes {
-                        let hit_box_size_scaled = hit_box.size * scale;
-                        let hit_box_offset_scaled = hit_box.offset * scale;
-                        gizmos.rect_2d(
-                            transform.translation.truncate() + hit_box_offset_scaled,
-                            0.0,
-                            hit_box_size_scaled,
-                            Color::rgba(1f32, 0f32, 0f32, 0.3f32),
-                        );
+                    if gui_state.show_hitboxes {
+                        for hit_box in &frame_data.hit_boxes {
+                            let hit_box_size_scaled = hit_box.size * scale;
+                            let hit_box_offset_scaled = hit_box.offset * scale;
+
+                            commands.spawn((MaterialMesh2dBundle {
+                                mesh: hitbox_mesh_and_material.mesh.clone().into(),
+                                material: hitbox_mesh_and_material.material.clone(),
+                                transform: Transform::from_translation(hit_box_offset_scaled.extend(100.))
+                                    .with_scale(hit_box_size_scaled.extend(0.)),
+                                ..default()
+                            }, Lifetime {
+                                timer: Timer::from_seconds(0.01, TimerMode::Once),
+                            }));
+
+                            gizmos.rect_2d(
+                                transform.translation.truncate() + hit_box_offset_scaled,
+                                0.0,
+                                hit_box_size_scaled,
+                                Color::rgba(1f32, 0f32, 0f32, 0.3f32),
+                            );
+                        }
                     }
 
-                    for hurt_box in &frame_data.hurt_boxes {
-                        let hurt_box_size_scaled = hurt_box.size * scale;
-                        let hurt_box_offset_scaled = hurt_box.offset * scale;
-                        gizmos.rect_2d(
-                            transform.translation.truncate() + hurt_box_offset_scaled,
-                            0.0,
-                            hurt_box_size_scaled,
-                            Color::rgba(0f32, 1f32, 0f32, 0.3f32),
-                        );
+                    if gui_state.show_hurtboxes {
+                        for hurt_box in &frame_data.hurt_boxes {
+                            let hurt_box_size_scaled = hurt_box.size * scale;
+                            let hurt_box_offset_scaled = hurt_box.offset * scale;
+
+                            commands.spawn((MaterialMesh2dBundle {
+                                mesh: hurtbox_mesh_and_material.mesh.clone().into(),
+                                material: hurtbox_mesh_and_material.material.clone(),
+                                transform: Transform::from_translation(hurt_box_offset_scaled.extend(100.))
+                                    .with_scale(hurt_box_size_scaled.extend(0.)),
+                                ..default()
+                            }, Lifetime {
+                                timer: Timer::from_seconds(0.01, TimerMode::Once),
+                            }));
+
+                            gizmos.rect_2d(
+                                transform.translation.truncate() + hurt_box_offset_scaled,
+                                0.0,
+                                hurt_box_size_scaled,
+                                Color::rgba(0f32, 1f32, 0f32, 0.3f32),
+                            );
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+fn update_lifetimes(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Lifetime)>,
+) {
+    for (entity, mut lifetime) in query.iter_mut() {
+        // Update the timer
+        lifetime.timer.tick(time.delta());
+
+        // Despawn the entity if the timer has finished
+        if lifetime.timer.finished() {
+            commands.entity(entity).despawn();
         }
     }
 }
