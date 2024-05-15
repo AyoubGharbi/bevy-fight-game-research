@@ -1,10 +1,21 @@
 use bevy::app::{App, Plugin};
-use bevy::prelude::{Res, ResMut, Resource, Update};
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 use bevy_egui::egui::emath;
 
-use crate::core::core::{GameMode, GameState};
-use crate::editor::editor_core::{save_settings_to_file, SpriteSheetInfo, SpriteSheets, SpriteSheetsData};
+use crate::core::*;
+use crate::core::core_core::*;
+use crate::editor::editor_core::*;
+
+pub struct EditorGuiPlugin;
+
+impl Plugin for EditorGuiPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(EguiPlugin)
+            .insert_resource(EditorSpace::default())
+            .insert_resource(EditorSelectedSpriteSheet::default())
+            .add_systems(Update, load_sprite_sheets);
+    }
+}
 
 #[derive(Default, Resource)]
 pub struct EditorSpace {
@@ -26,30 +37,18 @@ impl Default for EditorSelectedSpriteSheet {
     }
 }
 
-pub struct EditorGuiPlugin;
-
-impl Plugin for EditorGuiPlugin {
-    fn build(&self, app: &mut App) {
-        app.add_plugins(EguiPlugin)
-            .insert_resource(EditorSpace::default())
-            .insert_resource(EditorSelectedSpriteSheet::default())
-            .add_systems(Update, load_sprite_sheets);
-    }
-}
-
 fn load_sprite_sheets(
     mut egui_contexts: EguiContexts,
     mut sprite_sheets: ResMut<SpriteSheets>,
     mut editor_space: ResMut<EditorSpace>,
     mut selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     game_state: Res<GameState>) {
-
     if game_state.mode != GameMode::Editor {
         return;
     }
 
     let ctx = egui_contexts.ctx_mut();
-    egui_extras::install_image_loaders(&ctx);
+    egui_extras::install_image_loaders(ctx);
     editor_space.right = egui::SidePanel::right("editor")
         .show(ctx, |ui| {
             ui.collapsing("Loaded Sprite Sheets", |ui| {
@@ -126,7 +125,7 @@ fn load_sprite_sheets(
 
             if ui.button("Save").clicked() {
                 // Generate the data to be saved
-                let data_to_save = prepare_sprite_sheets_for_saving(&*sprite_sheets);
+                let data_to_save = prepare_sprite_sheets_for_saving(&sprite_sheets);
                 // Specify the path where you want to save the JSON file
                 save_settings_to_file("assets/sprite_sheets.json", &data_to_save);
             }

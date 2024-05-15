@@ -1,13 +1,8 @@
 use bevy::app::App;
-use bevy::prelude::{Plugin, Res, ResMut, Resource, Update};
 use bevy_egui::{egui, EguiContexts};
-use crate::core::core::{GameMode, GameState};
 
-#[derive(Default, Resource)]
-pub struct GuiState {
-    pub show_hitboxes: bool,
-    pub show_hurtboxes: bool,
-}
+use crate::core::*;
+use crate::core::core_core::*;
 
 pub struct CoreGuiPlugin;
 
@@ -15,11 +10,17 @@ impl Plugin for CoreGuiPlugin {
     fn build(&self, app: &mut App) {
         app
             .insert_resource(GuiState {
-                show_hitboxes: false,
-                show_hurtboxes: false,
+                show_hit_boxes: false,
+                show_hurt_boxes: false,
             })
             .add_systems(Update, display_core_information);
     }
+}
+
+#[derive(Default, Resource)]
+pub struct GuiState {
+    pub show_hit_boxes: bool,
+    pub show_hurt_boxes: bool,
 }
 
 fn display_core_information(
@@ -29,10 +30,10 @@ fn display_core_information(
     let ctx = egui_contexts.ctx_mut();
 
     egui::Window::new("Core").show(ctx, |ui| {
-        ui.label(format!("Current mode: {}", game_state.mode));
+        ui.label(format!("Mode: {}", game_state.mode));
         if game_state.mode == GameMode::Game {
-            ui.checkbox(&mut gui_state.show_hitboxes, "Show Hitboxes");
-            ui.checkbox(&mut gui_state.show_hurtboxes, "Show Hurtboxes");
+            ui.checkbox(&mut gui_state.show_hit_boxes, "Show Hit Boxes");
+            ui.checkbox(&mut gui_state.show_hurt_boxes, "Show Hurt Boxes");
         }
     });
 }

@@ -1,14 +1,14 @@
 use bevy::app::{App, Update};
-use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Assets, Camera, Camera2dBundle, ClearColorConfig, Color, ColorMaterial, Commands, Component, default, DefaultGizmoConfigGroup, Deref, DerefMut, Entity, GizmoConfigStore, Gizmos, Handle, Mesh, Plugin, Query, Res, ResMut, Resource, shape, SpriteSheetBundle, TextureAtlas, Time, Timer, TimerMode, Transform};
+use bevy::math::Vec3;
 use bevy::sprite::MaterialMesh2dBundle;
 use bevy_math::primitives::Rectangle;
 
-use crate::core::core::{GameMode, GameState};
-use crate::core::core_gui::GuiState;
-use crate::editor::editor_core::SpriteSheets;
-use crate::editor::editor_gui::EditorSelectedSpriteSheet;
-use crate::game::game_gui::GameGuiPlugin;
+use crate::core::core_core::*;
+use crate::core::core_gui::*;
+use crate::editor::editor_core::*;
+use crate::editor::editor_gui::*;
+use crate::game::*;
+use crate::game::game_gui::*;
 
 pub struct GamePlugin;
 
@@ -18,7 +18,6 @@ impl Plugin for GamePlugin {
             .insert_resource(GameCameraEntity::default())
             .insert_resource(HitboxMeshAndMaterial::default())
             .insert_resource(HurtboxMeshAndMaterial::default())
-            .insert_resource(Player::default())
             .add_systems(Update, animate_sprite)
             .add_systems(Update, game_state_adapter_system)
             .add_systems(Update, gizmos_selected_sprite)
@@ -27,16 +26,10 @@ impl Plugin for GamePlugin {
 }
 
 #[derive(Component)]
-struct GameCamera {
-    zoom: f32,
-    target: Vec2,
-}
+struct Player;
 
-impl GameCamera {
-    fn new(zoom: f32, target: Vec2) -> Self {
-        Self { zoom, target }
-    }
-}
+#[derive(Default, Component)]
+struct GameCamera;
 
 #[derive(Default, Resource)]
 struct HitboxMeshAndMaterial {
@@ -57,11 +50,6 @@ struct Lifetime {
 
 #[derive(Default, Resource)]
 pub struct GameCameraEntity {
-    pub entity: Option<Entity>,
-}
-
-#[derive(Default, Resource)]
-pub struct Player {
     pub entity: Option<Entity>,
 }
 
@@ -91,23 +79,23 @@ impl Default for GameSelectedSpriteSheet {
 
 fn game_state_adapter_system(
     mut commands: Commands,
-    mut config_store: ResMut<GizmoConfigStore>,
+    config_store: ResMut<GizmoConfigStore>,
     game_state: Res<GameState>,
     sprite_sheets: ResMut<SpriteSheets>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<ColorMaterial>>,
-    hitbox_mesh_and_material: ResMut<HitboxMeshAndMaterial>,
-    hurtbox_mesh_and_material: ResMut<HurtboxMeshAndMaterial>,
-    mut player: ResMut<Player>) {
+    hit_box_mesh_and_material: ResMut<HitboxMeshAndMaterial>,
+    hurt_box_mesh_and_material: ResMut<HurtboxMeshAndMaterial>,
+    mut query: Query<Entity, With<Player>>) {
     match &game_state.mode {
         GameMode::Editor => {
             if let Some(entity) = game_camera_entity.entity.take() {
                 commands.entity(entity).despawn();
             }
 
-            if let Some(entity) = player.entity.take() {
+            for entity in query.iter_mut() {
                 commands.entity(entity).despawn();
             }
         }
@@ -120,8 +108,7 @@ fn game_state_adapter_system(
                     sprite_sheets,
                     selected_sprite_sheet,
                     game_camera_entity,
-                    meshes, materials, hitbox_mesh_and_material, hurtbox_mesh_and_material,
-                    player);
+                    meshes, materials, hit_box_mesh_and_material, hurt_box_mesh_and_material);
             }
         }
     }
@@ -157,16 +144,15 @@ fn setup(
     mut game_camera_entity: ResMut<GameCameraEntity>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut hitbox_mesh_and_material: ResMut<HitboxMeshAndMaterial>,
+    mut hit_box_mesh_and_material: ResMut<HitboxMeshAndMaterial>,
     mut hurtbox_mesh_and_material: ResMut<HurtboxMeshAndMaterial>,
-    mut player: ResMut<Player>,
 ) {
     let (config, _) = config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 5.;
 
     // hitbox gizmo
-    hitbox_mesh_and_material.mesh = meshes.add(Mesh::from(Rectangle::default()));
-    hitbox_mesh_and_material.material = materials.add(ColorMaterial::from(Color::rgb_u8(243, 139, 168)));
+    hit_box_mesh_and_material.mesh = meshes.add(Mesh::from(Rectangle::default()));
+    hit_box_mesh_and_material.material = materials.add(ColorMaterial::from(Color::rgb_u8(243, 139, 168)));
 
     // hurtbox gizmo
     hurtbox_mesh_and_material.mesh = meshes.add(Mesh::from(Rectangle::default()));
@@ -175,19 +161,19 @@ fn setup(
     // camera
     let mut entity = commands.spawn(Camera2dBundle {
         camera: Camera {
-            clear_color: ClearColorConfig::Custom(Color::rgb_u8(17, 17, 27)), // Set background color if needed
+            clear_color: ClearColorConfig::Custom(Color::rgb_u8(17, 17, 27)),
             ..default()
         },
         ..default()
     });
-    entity.insert(GameCamera::new(1.0, Vec2::ZERO));
+    entity.insert(GameCamera);
     game_camera_entity.entity = Some(entity.id());
 
     if let Some(id) = &selected_sprite_sheet.id {
         if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get_mut(id) {
             let animation_indices = AnimationIndices { first: 1, last: sprite_sheet_atlas.sprite_sheet_info.columns - 1 };
             let texture_handle = sprite_sheet_atlas.texture_handle.clone();
-            let entity = commands.spawn(
+            let mut player_entity = commands.spawn(
                 (SpriteSheetBundle {
                     texture: texture_handle,
                     atlas: TextureAtlas {
@@ -201,8 +187,7 @@ fn setup(
                  AnimationTimer(Timer::from_seconds(0.2, TimerMode::Repeating))
                 ));
 
-
-            player.entity = Some(entity.id());
+            player_entity.insert(Player);
         }
     }
 }
@@ -227,9 +212,8 @@ fn gizmos_selected_sprite(
             for (transform, _indices, _timer, atlas) in &mut query {
                 let scale = transform.scale.truncate();
 
-
                 if let Some(frame_data) = sprite_sheet_atlas.sprite_sheet_info.frames.get_mut(atlas.index) {
-                    if gui_state.show_hitboxes {
+                    if gui_state.show_hit_boxes {
                         for hit_box in &frame_data.hit_boxes {
                             let hit_box_size_scaled = hit_box.size * scale;
                             let hit_box_offset_scaled = hit_box.offset * scale;
@@ -253,7 +237,7 @@ fn gizmos_selected_sprite(
                         }
                     }
 
-                    if gui_state.show_hurtboxes {
+                    if gui_state.show_hurt_boxes {
                         for hurt_box in &frame_data.hurt_boxes {
                             let hurt_box_size_scaled = hurt_box.size * scale;
                             let hurt_box_offset_scaled = hurt_box.offset * scale;
@@ -288,10 +272,8 @@ fn update_lifetimes(
     mut query: Query<(Entity, &mut Lifetime)>,
 ) {
     for (entity, mut lifetime) in query.iter_mut() {
-        // Update the timer
         lifetime.timer.tick(time.delta());
 
-        // Despawn the entity if the timer has finished
         if lifetime.timer.finished() {
             commands.entity(entity).despawn();
         }

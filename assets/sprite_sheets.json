@@ -1,6 +1,200 @@
 {
   "sheets": [
     {
+      "id": "player-punch-cross",
+      "image_path": "player-punch-cross/player-punch cross-64x64.png",
+      "sprite_sheet_width": 448,
+      "sprite_sheet_height": 64,
+      "tile_width": 64,
+      "tile_height": 64,
+      "columns": 7,
+      "rows": 1,
+      "frames": [
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                0.0,
+                0.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                10.0,
+                29.5
+              ],
+              "offset": [
+                -3.0,
+                -1.5
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                18.0,
+                5.0
+              ],
+              "offset": [
+                23.0,
+                1.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                10.0,
+                21.0
+              ],
+              "offset": [
+                12.0,
+                -5.5
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                6.0,
+                12.0
+              ],
+              "offset": [
+                25.0,
+                -3.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                10.0,
+                21.0
+              ],
+              "offset": [
+                12.0,
+                -5.5
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                5.0,
+                10.0
+              ],
+              "offset": [
+                19.0,
+                -3.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                21.0
+              ],
+              "offset": [
+                10.0,
+                -5.5
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                0.0,
+                0.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                8.0,
+                29.0
+              ],
+              "offset": [
+                5.0,
+                -1.5
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                0.0,
+                0.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                10.0,
+                27.0
+              ],
+              "offset": [
+                -5.0,
+                -2.5
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [
+            {
+              "size": [
+                0.0,
+                0.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ],
+          "hurt_boxes": [
+            {
+              "size": [
+                10.0,
+                28.0
+              ],
+              "offset": [
+                -5.0,
+                -2.0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "player-punch-jab",
       "image_path": "player-punch-jab/player-jab-48x48.png",
       "sprite_sheet_width": 480,
@@ -273,389 +467,6 @@
       ]
     },
     {
-      "id": "player-jump",
-      "image_path": "player-jump/player-jump-48x48.png",
-      "sprite_sheet_width": 144,
-      "sprite_sheet_height": 48,
-      "tile_width": 48,
-      "tile_height": 48,
-      "columns": 3,
-      "rows": 1,
-      "frames": [
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "player-run",
-      "image_path": "player-run/player-run-48x48.png",
-      "sprite_sheet_width": 384,
-      "sprite_sheet_height": 48,
-      "tile_width": 48,
-      "tile_height": 48,
-      "columns": 8,
-      "rows": 1,
-      "frames": [
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                25.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "player-punch-cross",
-      "image_path": "player-punch-cross/player-punch cross-64x64.png",
-      "sprite_sheet_width": 448,
-      "sprite_sheet_height": 64,
-      "tile_width": 64,
-      "tile_height": 64,
-      "columns": 7,
-      "rows": 1,
-      "frames": [
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                0.0,
-                0.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                10.0,
-                29.5
-              ],
-              "offset": [
-                -3.0,
-                -1.5
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                18.0,
-                5.0
-              ],
-              "offset": [
-                23.0,
-                1.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                10.0,
-                21.0
-              ],
-              "offset": [
-                12.0,
-                -5.5
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                6.0,
-                12.0
-              ],
-              "offset": [
-                25.0,
-                -3.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                10.0,
-                21.0
-              ],
-              "offset": [
-                12.0,
-                -5.5
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                5.0,
-                10.0
-              ],
-              "offset": [
-                19.0,
-                -3.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                12.0,
-                21.0
-              ],
-              "offset": [
-                10.0,
-                -5.5
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                0.0,
-                0.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                8.0,
-                29.0
-              ],
-              "offset": [
-                5.0,
-                -1.5
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                0.0,
-                0.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                10.0,
-                27.0
-              ],
-              "offset": [
-                -5.0,
-                -2.5
-              ]
-            }
-          ]
-        },
-        {
-          "hit_boxes": [
-            {
-              "size": [
-                0.0,
-                0.0
-              ],
-              "offset": [
-                0.0,
-                0.0
-              ]
-            }
-          ],
-          "hurt_boxes": [
-            {
-              "size": [
-                10.0,
-                28.0
-              ],
-              "offset": [
-                -5.0,
-                -2.0
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "id": "player-idle",
       "image_path": "player-idle/player-idle-48x48.png",
       "sprite_sheet_width": 480,
@@ -811,6 +622,195 @@
               "offset": [
                 0.0,
                 -1.0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "player-run",
+      "image_path": "player-run/player-run-48x48.png",
+      "sprite_sheet_width": 384,
+      "sprite_sheet_height": 48,
+      "tile_width": 48,
+      "tile_height": 48,
+      "columns": 8,
+      "rows": 1,
+      "frames": [
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "player-jump",
+      "image_path": "player-jump/player-jump-48x48.png",
+      "sprite_sheet_width": 144,
+      "sprite_sheet_height": 48,
+      "tile_width": 48,
+      "tile_height": 48,
+      "columns": 3,
+      "rows": 1,
+      "frames": [
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
+              ]
+            }
+          ]
+        },
+        {
+          "hit_boxes": [],
+          "hurt_boxes": [
+            {
+              "size": [
+                12.0,
+                25.0
+              ],
+              "offset": [
+                0.0,
+                0.0
               ]
             }
           ]

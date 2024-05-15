@@ -2,13 +2,17 @@ use bevy::app::App;
 use bevy::DefaultPlugins;
 use bevy::prelude::*;
 
-use crate::core::core::CorePlugin;
-use crate::editor::editor_core::EditorPlugin;
-use crate::game::game_core::GamePlugin;
+mod core;
+
+use crate::core::core_core::*;
 
 mod editor;
-mod core;
+
+use crate::editor::editor_core::EditorPlugin;
+
 mod game;
+
+use crate::game::game_core::GamePlugin;
 
 fn main() {
     App::new()

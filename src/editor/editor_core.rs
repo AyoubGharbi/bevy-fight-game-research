@@ -1,16 +1,16 @@
-use std::fs;
-
 use bevy::app::{App, Update};
 use bevy::asset::{Assets, AssetServer, Handle};
 use bevy::math::{Vec2, Vec3};
-use bevy::prelude::{Camera2dBundle, Color, Commands, Component, default, Deref, DerefMut, Entity, Gizmos, Image, Plugin, Query, Res, ResMut, Resource, SpriteSheetBundle, Startup, TextureAtlas, Transform, Window, With};
 use bevy::sprite::TextureAtlasLayout;
 use bevy::utils::HashMap;
 use bevy::window::PrimaryWindow;
+
+use std::fs;
 use serde::{Deserialize, Serialize};
 
-use crate::core::core::{GameMode, GameState};
-use crate::editor::editor_gui::{EditorSpace, EditorSelectedSpriteSheet, EditorGuiPlugin};
+use crate::core::core_core::*;
+use crate::editor::*;
+use crate::editor::editor_gui::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FrameData {
@@ -45,17 +45,8 @@ pub(crate) struct EditorCameraEntity {
 #[derive(Resource, Deref, DerefMut)]
 struct EditorCameraTransform(Transform);
 
-#[derive(Component)]
-struct EditorCamera {
-    zoom: f32,
-    target: Vec2,
-}
-
-impl EditorCamera {
-    fn new(zoom: f32, target: Vec2) -> Self {
-        Self { zoom, target }
-    }
-}
+#[derive(Default, Component)]
+struct EditorCamera;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct SpriteSheetsData {
@@ -138,10 +129,10 @@ fn spawn_editor_camera(
     mut editor_camera_entity: ResMut<EditorCameraEntity>,
 ) {
     let camera_transform = Transform::from_xyz(0.0, 0.0, 100.0);
-    commands.insert_resource(EditorCameraTransform(camera_transform.clone()));
+    commands.insert_resource(EditorCameraTransform(camera_transform));
 
     let mut entity = commands.spawn(Camera2dBundle::default());
-    entity.insert(EditorCamera::new(1.0, Vec2::ZERO));
+    entity.insert(EditorCamera);
     editor_camera_entity.entity = Some(entity.id());
 }
 
@@ -262,7 +253,7 @@ fn gizmos_hurt_boxes_sprite(
     if game_state.mode != GameMode::Editor {
         return;
     }
-    for (transform,hurt_box) in query.iter() {
+    for (transform, hurt_box) in query.iter() {
         let scale = transform.scale.truncate();
 
         let hurt_box_size_scaled = hurt_box.size * scale;
