@@ -9,7 +9,7 @@ pub struct CoreGuiPlugin;
 impl Plugin for CoreGuiPlugin {
     fn build(&self, app: &mut App) {
         app
-            .insert_resource(GuiState {
+            .insert_resource(CoreGuiState {
                 show_hit_boxes: false,
                 show_hurt_boxes: false,
             })
@@ -18,7 +18,7 @@ impl Plugin for CoreGuiPlugin {
 }
 
 #[derive(Default, Resource)]
-pub struct GuiState {
+pub struct CoreGuiState {
     pub show_hit_boxes: bool,
     pub show_hurt_boxes: bool,
 }
@@ -26,7 +26,7 @@ pub struct GuiState {
 fn display_core_information(
     mut egui_contexts: EguiContexts,
     mut game_state: ResMut<GameState>,
-    mut gui_state: ResMut<GuiState>) {
+    mut gui_state: ResMut<CoreGuiState>) {
     let ctx = egui_contexts.ctx_mut();
 
     egui::Window::new("Core").show(ctx, |ui| {

@@ -81,7 +81,7 @@ fn game_state_adapter_system(
     mut commands: Commands,
     config_store: ResMut<GizmoConfigStore>,
     game_state: Res<GameState>,
-    sprite_sheets: ResMut<SpriteSheets>,
+    sprite_sheets: ResMut<EditorSpriteSheets>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     meshes: ResMut<Assets<Mesh>>,
@@ -139,7 +139,7 @@ fn animate_sprite(
 fn setup(
     mut commands: Commands,
     mut config_store: ResMut<GizmoConfigStore>,
-    mut sprite_sheets: ResMut<SpriteSheets>,
+    mut sprite_sheets: ResMut<EditorSpriteSheets>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -198,10 +198,10 @@ fn gizmos_selected_sprite(
     hitbox_mesh_and_material: Res<HitboxMeshAndMaterial>,
     hurtbox_mesh_and_material: Res<HurtboxMeshAndMaterial>,
     selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
-    mut sprite_sheets: ResMut<SpriteSheets>,
+    mut sprite_sheets: ResMut<EditorSpriteSheets>,
     mut query: Query<(&Transform, &AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
     game_state: Res<GameState>,
-    gui_state: ResMut<GuiState>,
+    gui_state: ResMut<CoreGuiState>,
 ) {
     if game_state.mode != GameMode::Game {
         return;

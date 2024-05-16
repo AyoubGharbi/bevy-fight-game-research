@@ -13,13 +13,13 @@ use crate::editor::*;
 use crate::editor::editor_gui::*;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct FrameData {
-    pub hit_boxes: Vec<HitBox>,
-    pub hurt_boxes: Vec<HurtBox>,
+pub struct EditorFrameData {
+    pub hit_boxes: Vec<EditorHitBox>,
+    pub hurt_boxes: Vec<EditorHurtBox>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct SpriteSheetInfo {
+pub struct EditorSpriteSheetInfo {
     pub id: String,
     pub image_path: String,
     pub sprite_sheet_width: usize,
@@ -28,7 +28,7 @@ pub struct SpriteSheetInfo {
     pub tile_height: usize,
     pub columns: usize,
     pub rows: usize,
-    pub frames: Vec<FrameData>,
+    pub frames: Vec<EditorFrameData>,
 }
 
 
@@ -49,31 +49,31 @@ struct EditorCameraTransform(Transform);
 struct EditorCamera;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct SpriteSheetsData {
-    pub sheets: Vec<SpriteSheetInfo>,
+pub struct EditorSpriteSheetsData {
+    pub sheets: Vec<EditorSpriteSheetInfo>,
 }
 
 #[derive(Resource)]
-pub struct SpriteSheetAtlas {
+pub struct EditorSpriteSheetAtlas {
     pub handle: Handle<TextureAtlasLayout>,
     pub sprite_sheet_path: String,
     pub texture_handle: Handle<Image>,
-    pub sprite_sheet_info: SpriteSheetInfo,
+    pub sprite_sheet_info: EditorSpriteSheetInfo,
 }
 
 #[derive(Resource)]
-pub(crate) struct SpriteSheets {
-    pub(crate) sheets: HashMap<String, SpriteSheetAtlas>,
+pub(crate) struct EditorSpriteSheets {
+    pub(crate) sheets: HashMap<String, EditorSpriteSheetAtlas>,
 }
 
 #[derive(Default, Component, Serialize, Deserialize, Clone, Debug)]
-pub struct HitBox {
+pub struct EditorHitBox {
     pub size: Vec2,
     pub offset: Vec2,
 }
 
 #[derive(Default, Component, Serialize, Deserialize, Clone, Debug)]
-pub struct HurtBox {
+pub struct EditorHurtBox {
     pub size: Vec2,
     pub offset: Vec2,
 }
@@ -83,7 +83,7 @@ pub struct EditorPlugin;
 impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EditorGuiPlugin)
-            .insert_resource(SpriteSheets { sheets: HashMap::new() })
+            .insert_resource(EditorSpriteSheets { sheets: HashMap::new() })
             .insert_resource(EditorSpriteSheetEntity::default())
             .insert_resource(EditorCameraEntity::default())
             .add_systems(Startup, load_sprite_sheets)
@@ -99,10 +99,10 @@ impl Plugin for EditorPlugin {
 fn load_sprite_sheets(
     asset_server: Res<AssetServer>,
     mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
-    mut sprite_sheets: ResMut<SpriteSheets>,
+    mut sprite_sheets: ResMut<EditorSpriteSheets>,
 ) {
     let json_path = "assets/sprite_sheets.json";
-    let sprite_sheet_data: SpriteSheetsData = load_settings_from_file(json_path);
+    let sprite_sheet_data: EditorSpriteSheetsData = load_settings_from_file(json_path);
 
     for info in sprite_sheet_data.sheets {
         let tex_handle = asset_server.load(&info.image_path);
@@ -114,7 +114,7 @@ fn load_sprite_sheets(
             None,
         );
         let texture_atlas_layout_handle = texture_atlases.add(texture_atlas_layout);
-        let atlas_data = SpriteSheetAtlas {
+        let atlas_data = EditorSpriteSheetAtlas {
             sprite_sheet_info: info.clone(),
             handle: texture_atlas_layout_handle,
             sprite_sheet_path: info.image_path.clone(),
@@ -161,7 +161,7 @@ fn game_state_adapter_system(
 
 fn display_selected_sprite_sheet(
     mut commands: Commands,
-    mut sprite_sheets: ResMut<SpriteSheets>,
+    mut sprite_sheets: ResMut<EditorSpriteSheets>,
     selected_sprite_sheet: Res<EditorSelectedSpriteSheet>,
     mut current_sprite_sheet_entity: ResMut<EditorSpriteSheetEntity>,
     game_state: Res<GameState>,
@@ -191,14 +191,14 @@ fn display_selected_sprite_sheet(
                 if let Some(frame_index) = selected_sprite_sheet.frame_index {
                     if let Some(frame_data) = sprite_sheet_atlas.sprite_sheet_info.frames.get_mut(frame_index) {
                         for hit_box in &mut frame_data.hit_boxes {
-                            entity.insert(HitBox {
+                            entity.insert(EditorHitBox {
                                 size: hit_box.size,
                                 offset: hit_box.offset,
                             });
                         }
 
                         for hurt_box in &mut frame_data.hurt_boxes {
-                            entity.insert(HurtBox {
+                            entity.insert(EditorHurtBox {
                                 size: hurt_box.size,
                                 offset: hurt_box.offset,
                             });
@@ -212,7 +212,7 @@ fn display_selected_sprite_sheet(
 }
 
 fn update_camera_transform(
-    editor_space: Res<EditorSpace>,
+    editor_space: Res<EditorGuiSpace>,
     original_camera_transform: Res<EditorCameraTransform>,
     windows: Query<&Window, With<PrimaryWindow>>,
     editor_camera_entity: Res<EditorCameraEntity>,
@@ -247,7 +247,7 @@ fn update_camera_transform(
 
 fn gizmos_hurt_boxes_sprite(
     mut gizmos: Gizmos,
-    query: Query<(&Transform, &HurtBox)>,
+    query: Query<(&Transform, &EditorHurtBox)>,
     game_state: Res<GameState>,
 ) {
     if game_state.mode != GameMode::Editor {
@@ -270,7 +270,7 @@ fn gizmos_hurt_boxes_sprite(
 
 fn gizmos_hit_boxes_sprite(
     mut gizmos: Gizmos,
-    query: Query<(&Transform, &HitBox)>,
+    query: Query<(&Transform, &EditorHitBox)>,
     game_state: Res<GameState>,
 ) {
     if game_state.mode != GameMode::Editor {

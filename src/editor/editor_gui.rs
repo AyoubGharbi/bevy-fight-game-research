@@ -11,14 +11,14 @@ pub struct EditorGuiPlugin;
 impl Plugin for EditorGuiPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EguiPlugin)
-            .insert_resource(EditorSpace::default())
+            .insert_resource(EditorGuiSpace::default())
             .insert_resource(EditorSelectedSpriteSheet::default())
             .add_systems(Update, load_sprite_sheets);
     }
 }
 
 #[derive(Default, Resource)]
-pub struct EditorSpace {
+pub struct EditorGuiSpace {
     pub right: f32,
 }
 
@@ -39,8 +39,8 @@ impl Default for EditorSelectedSpriteSheet {
 
 fn load_sprite_sheets(
     mut egui_contexts: EguiContexts,
-    mut sprite_sheets: ResMut<SpriteSheets>,
-    mut editor_space: ResMut<EditorSpace>,
+    mut sprite_sheets: ResMut<EditorSpriteSheets>,
+    mut editor_space: ResMut<EditorGuiSpace>,
     mut selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
     game_state: Res<GameState>) {
     if game_state.mode != GameMode::Editor {
@@ -134,10 +134,10 @@ fn load_sprite_sheets(
         .width();
 }
 
-fn prepare_sprite_sheets_for_saving(sprite_sheets: &SpriteSheets) -> SpriteSheetsData {
-    let sheets: Vec<SpriteSheetInfo> = sprite_sheets.sheets.values()
+fn prepare_sprite_sheets_for_saving(sprite_sheets: &EditorSpriteSheets) -> EditorSpriteSheetsData {
+    let sheets: Vec<EditorSpriteSheetInfo> = sprite_sheets.sheets.values()
         .map(|atlas| atlas.sprite_sheet_info.clone())
         .collect();
 
-    SpriteSheetsData { sheets }
+    EditorSpriteSheetsData { sheets }
 }
