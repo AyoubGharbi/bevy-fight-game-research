@@ -41,7 +41,6 @@ impl Default for GameState {
     }
 }
 
-
 fn mode_switching_system(
     mut game_state: ResMut<GameState>,
     keyboard: Res<ButtonInput<KeyCode>>) {
