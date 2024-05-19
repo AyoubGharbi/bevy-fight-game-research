@@ -159,17 +159,18 @@ fn game_state_adapter_system(
 fn display_selected_sprite_sheet(
     mut commands: Commands,
     mut sprite_sheets: ResMut<EditorSpriteSheets>,
-    selected_frame: Res<SelectedFrame>,
-    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheet>,
+    mut selected_frame: ResMut<SelectedFrame>,
+    mut current_sprite_sheet: ResMut<EditorSpriteSheet>,
     game_state: Res<GameState>,
 ) {
     if game_state.mode != GameMode::Editor {
         return;
     }
 
-    if let Some(entity) = current_sprite_sheet_entity.entity {
+    if let Some(entity) = current_sprite_sheet.entity {
         commands.entity(entity).despawn();
     }
+
 
     if let Some(id) = &selected_frame.sprite_sheet_id {
         if let Some(frame_index) = &selected_frame.frame_index {
@@ -186,23 +187,21 @@ fn display_selected_sprite_sheet(
                 });
 
                 if let Some(frame_index) = selected_frame.frame_index {
-                    if let Some(frame_data) = sprite_sheet_atlas.sprite_sheet_info.frames.get_mut(frame_index) {
-                        for hit_box in &mut frame_data.hit_boxes {
-                            entity.insert(EditorHitBox {
-                                size: hit_box.size,
-                                offset: hit_box.offset,
-                            });
-                        }
+                    if let Some(sheet_info) = &mut selected_frame.sheet_info {
+                        if let Some(frame_data) = sheet_info.frames.get_mut(frame_index) {
+                            for hit_box in frame_data.hit_boxes.iter_mut() {
+                                println!("Hit box : {}", hit_box.size);
+                                entity.insert(hit_box.clone());
+                            }
 
-                        for hurt_box in &mut frame_data.hurt_boxes {
-                            entity.insert(EditorHurtBox {
-                                size: hurt_box.size,
-                                offset: hurt_box.offset,
-                            });
+                            for hurt_box in frame_data.hurt_boxes.iter_mut() {
+                                println!("Hurt box : {}", hurt_box.size);
+                                entity.insert(hurt_box.clone());
+                            }
                         }
                     }
                 }
-                current_sprite_sheet_entity.entity = Some(entity.id());
+                current_sprite_sheet.entity = Some(entity.id());
             }
         }
     }
