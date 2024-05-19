@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::core_core::*;
 use crate::editor::*;
 use crate::editor::editor_gui::*;
+use crate::editor::inspector::inspector_core::SelectedFrame;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct EditorFrameData {
@@ -33,20 +34,17 @@ pub struct EditorSpriteSheetInfo {
 
 
 #[derive(Default, Resource)]
-struct EditorSpriteSheetEntity {
+struct EditorSpriteSheet {
     pub entity: Option<Entity>,
 }
 
 #[derive(Default, Resource)]
-pub(crate) struct EditorCameraEntity {
+pub(crate) struct EditorCamera {
     pub entity: Option<Entity>,
 }
 
 #[derive(Resource, Deref, DerefMut)]
 struct EditorCameraTransform(Transform);
-
-#[derive(Default, Component)]
-struct EditorCamera;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct EditorSpriteSheetsData {
@@ -84,8 +82,8 @@ impl Plugin for EditorPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(EditorGuiPlugin)
             .insert_resource(EditorSpriteSheets { sheets: HashMap::new() })
-            .insert_resource(EditorSpriteSheetEntity::default())
-            .insert_resource(EditorCameraEntity::default())
+            .insert_resource(EditorSpriteSheet::default())
+            .insert_resource(EditorCamera::default())
             .add_systems(Startup, load_sprite_sheets)
             .add_systems(Startup, spawn_editor_camera)
             .add_systems(Update, game_state_adapter_system)
@@ -126,21 +124,20 @@ fn load_sprite_sheets(
 
 fn spawn_editor_camera(
     mut commands: Commands,
-    mut editor_camera_entity: ResMut<EditorCameraEntity>,
+    mut editor_camera: ResMut<EditorCamera>,
 ) {
     let camera_transform = Transform::from_xyz(0.0, 0.0, 100.0);
     commands.insert_resource(EditorCameraTransform(camera_transform));
 
-    let mut entity = commands.spawn(Camera2dBundle::default());
-    entity.insert(EditorCamera);
-    editor_camera_entity.entity = Some(entity.id());
+    let entity = commands.spawn(Camera2dBundle::default());
+    editor_camera.entity = Some(entity.id());
 }
 
 fn game_state_adapter_system(
     mut commands: Commands,
     game_state: Res<GameState>,
-    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheetEntity>,
-    mut editor_camera_entity: ResMut<EditorCameraEntity>) {
+    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheet>,
+    mut editor_camera_entity: ResMut<EditorCamera>) {
     match &game_state.mode {
         GameMode::Editor => {
             if editor_camera_entity.entity.is_none() {
@@ -162,8 +159,8 @@ fn game_state_adapter_system(
 fn display_selected_sprite_sheet(
     mut commands: Commands,
     mut sprite_sheets: ResMut<EditorSpriteSheets>,
-    selected_sprite_sheet: Res<EditorSelectedSpriteSheet>,
-    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheetEntity>,
+    selected_frame: Res<SelectedFrame>,
+    mut current_sprite_sheet_entity: ResMut<EditorSpriteSheet>,
     game_state: Res<GameState>,
 ) {
     if game_state.mode != GameMode::Editor {
@@ -174,8 +171,8 @@ fn display_selected_sprite_sheet(
         commands.entity(entity).despawn();
     }
 
-    if let Some(id) = &selected_sprite_sheet.id {
-        if let Some(frame_index) = &selected_sprite_sheet.frame_index {
+    if let Some(id) = &selected_frame.sprite_sheet_id {
+        if let Some(frame_index) = &selected_frame.frame_index {
             if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get_mut(id) {
                 let texture_handle = sprite_sheet_atlas.texture_handle.clone();
                 let mut entity = commands.spawn(SpriteSheetBundle {
@@ -188,7 +185,7 @@ fn display_selected_sprite_sheet(
                     ..default()
                 });
 
-                if let Some(frame_index) = selected_sprite_sheet.frame_index {
+                if let Some(frame_index) = selected_frame.frame_index {
                     if let Some(frame_data) = sprite_sheet_atlas.sprite_sheet_info.frames.get_mut(frame_index) {
                         for hit_box in &mut frame_data.hit_boxes {
                             entity.insert(EditorHitBox {
@@ -215,7 +212,7 @@ fn update_camera_transform(
     editor_space: Res<EditorGuiSpace>,
     original_camera_transform: Res<EditorCameraTransform>,
     windows: Query<&Window, With<PrimaryWindow>>,
-    editor_camera_entity: Res<EditorCameraEntity>,
+    editor_camera_entity: Res<EditorCamera>,
     mut transforms: Query<&mut Transform>,
     game_state: Res<GameState>,
 ) {
@@ -227,9 +224,10 @@ fn update_camera_transform(
         if let Ok(mut transform) = transforms.get_mut(camera_entity) {
             let window = windows.single();
             let right_taken = editor_space.right / window.width();
+            let left_taken = editor_space.left / window.width();
 
             let translation_x = if game_state.mode == GameMode::Editor {
-                (right_taken) * window.width() * 0.5
+                (right_taken - left_taken) * window.width() * 0.5
             } else {
                 0.0
             };

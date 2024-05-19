@@ -6,7 +6,7 @@ use bevy_math::primitives::Rectangle;
 use crate::core::core_core::*;
 use crate::core::core_gui::*;
 use crate::editor::editor_core::*;
-use crate::editor::editor_gui::*;
+use crate::editor::inspector::inspector_core::SelectedFrame;
 use crate::game::*;
 use crate::game::game_gui::*;
 
@@ -82,7 +82,7 @@ fn game_state_adapter_system(
     config_store: ResMut<GizmoConfigStore>,
     game_state: Res<GameState>,
     sprite_sheets: ResMut<EditorSpriteSheets>,
-    selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
+    selected_frame: ResMut<SelectedFrame>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     meshes: ResMut<Assets<Mesh>>,
     materials: ResMut<Assets<ColorMaterial>>,
@@ -106,7 +106,7 @@ fn game_state_adapter_system(
                     commands,
                     config_store,
                     sprite_sheets,
-                    selected_sprite_sheet,
+                    selected_frame,
                     game_camera_entity,
                     meshes, materials, hit_box_mesh_and_material, hurt_box_mesh_and_material);
             }
@@ -140,7 +140,7 @@ fn setup(
     mut commands: Commands,
     mut config_store: ResMut<GizmoConfigStore>,
     mut sprite_sheets: ResMut<EditorSpriteSheets>,
-    selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
+    selected_frame: ResMut<SelectedFrame>,
     mut game_camera_entity: ResMut<GameCameraEntity>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
@@ -169,7 +169,7 @@ fn setup(
     entity.insert(GameCamera);
     game_camera_entity.entity = Some(entity.id());
 
-    if let Some(id) = &selected_sprite_sheet.id {
+    if let Some(id) = &selected_frame.sprite_sheet_id {
         if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get_mut(id) {
             let animation_indices = AnimationIndices { first: 1, last: sprite_sheet_atlas.sprite_sheet_info.columns - 1 };
             let texture_handle = sprite_sheet_atlas.texture_handle.clone();
@@ -197,7 +197,7 @@ fn gizmos_selected_sprite(
     mut gizmos: Gizmos,
     hitbox_mesh_and_material: Res<HitboxMeshAndMaterial>,
     hurtbox_mesh_and_material: Res<HurtboxMeshAndMaterial>,
-    selected_sprite_sheet: ResMut<EditorSelectedSpriteSheet>,
+    selected_frame: ResMut<SelectedFrame>,
     mut sprite_sheets: ResMut<EditorSpriteSheets>,
     mut query: Query<(&Transform, &AnimationIndices, &mut AnimationTimer, &mut TextureAtlas)>,
     game_state: Res<GameState>,
@@ -207,7 +207,7 @@ fn gizmos_selected_sprite(
         return;
     }
 
-    if let Some(id) = &selected_sprite_sheet.id {
+    if let Some(id) = &selected_frame.sprite_sheet_id {
         if let Some(sprite_sheet_atlas) = sprite_sheets.sheets.get_mut(id) {
             for (transform, _indices, _timer, atlas) in &mut query {
                 let scale = transform.scale.truncate();
